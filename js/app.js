@@ -1,3 +1,5 @@
+//============================ fetching data from api ===========================//
+
 const loadProducts = () => {
   const url = `https://fakestoreapi.com/products`;
   fetch(url)
@@ -6,26 +8,49 @@ const loadProducts = () => {
 };
 loadProducts();
 
-// show all product in UI 
+//=========================== Show All Products In UI ===========================//
+
 const showProducts = (products) => {
-  const allProducts = products.map((pd) => pd);
-  for (const product of allProducts) {
-    const image = product.images;
+  for (const product of products) {
+    const {
+      image,
+      title,
+      category,
+      rating: { rate, count },
+      price,
+      id,
+    } = product;
     const div = document.createElement("div");
     div.classList.add("product");
-    div.innerHTML = `<div class="single-product">
-      <div>
-    <img class="product-image" src=${image}></img>
-      </div>
-      <h3>${product.title}</h3>
-      <p>Category: ${product.category}</p>
-      <h2>Price: $ ${product.price}</h2>
-      <button onclick="addToCart(${product.id},${product.price})" id="addToCart-btn" class="buy-now btn btn-success">add to cart</button>
-      <button id="details-btn" class="btn btn-danger">Details</button></div>
-      `;
+    div.innerHTML = `<div class="single-product bg-gray-200 rounded-3xl">
+        <div>
+      <img class="product-image mx-auto " src=${image}></img>
+        </div>
+        <h3>${title}</h3>
+        <p>Category: ${category}</p>
+        <div class=" font-semibold text-3xl " >Customer Ratings</div>
+        <h4 class="stars-outer">
+        <div id="${title}" class="stars-inner"></div>
+        </h4>
+        <span class="text-2xl ml-2" style="font-size:18px;" >${rate} out of 5</span>
+        <div class="text-2xl"style="color: #565959">${count} global ratings</div>
+        <h4>Price: $ ${price}</h4>
+        <button onclick="addToCart(${id},${price})" id="addToCart-btn" class="buy-now btn btn-success ">add to cart</button>
+        <button  class="btn btn-danger ">Details</button></div>
+        `;
     document.getElementById("all-products").appendChild(div);
+
+    //============================ Customizing Rating Icons ===========================//
+
+    const starTotal = 5;
+    const starPercentage = (rate / starTotal) * 100;
+    const starPercentageRounded = `${(starPercentage / 10) * 10}%`;
+    document.getElementById(`${title}`).style.width = starPercentageRounded;
   }
 };
+
+//============================== Function for add to cart ====================================//
+
 let count = 0;
 const addToCart = (id, price) => {
   count = count + 1;
@@ -33,28 +58,34 @@ const addToCart = (id, price) => {
 
   updateTaxAndCharge();
   document.getElementById("total-Products").innerText = count;
+  updateTotal();
 };
+
+//============================ Function for getting price of product ===========================//
 
 const getInputValue = (id) => {
   const element = document.getElementById(id).innerText;
-  const converted = parseInt(element);
+  const converted = parseFloat(element);
   return converted;
 };
 
-// main price update function
+//================================= Main Price Update Function =============================//
+
 const updatePrice = (id, value) => {
   const convertedOldPrice = getInputValue(id);
   const convertPrice = parseFloat(value);
   const total = convertedOldPrice + convertPrice;
-  document.getElementById(id).innerText = Math.round(total);
+  document.getElementById(id).innerText = total.toFixed(2);
 };
 
-// set innerText function
+//=================================== Set Inner Text Function ==============================//
+
 const setInnerText = (id, value) => {
   document.getElementById(id).innerText = Math.round(value);
 };
 
-// update delivery charge and total Tax
+//============================== update delivery charge and total Tax ============================//
+
 const updateTaxAndCharge = () => {
   const priceConverted = getInputValue("price");
   if (priceConverted > 200) {
@@ -71,10 +102,33 @@ const updateTaxAndCharge = () => {
   }
 };
 
-//grandTotal update function
+//============================== grandTotal update function ============================//
+
 const updateTotal = () => {
   const grandTotal =
-    getInputValue("price") + getInputValue("delivery-charge") +
+    getInputValue("price") +
+    getInputValue("delivery-charge") +
     getInputValue("total-tax");
-  document.getElementById("total").innerText = grandTotal;
+  document.getElementById("total").innerText = grandTotal.toFixed(2);
+};
+
+//============================== function for search input value ============================//
+
+function inputChange(event) {
+  const searchedKey = event.target.value.toLowerCase();
+  filterNotes(searchedKey);
+}
+
+const filterNotes = (searchedKey) => {
+  const card = document.getElementsByClassName("product");
+
+  for (let i = 0; i < card.length; i++) {
+    const element = card[i];
+
+    if (element.innerText.toLowerCase().includes(searchedKey)) {
+      element.style.display = "block";
+    } else {
+      element.style.display = "none";
+    }
+  }
 };
